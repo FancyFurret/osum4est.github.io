@@ -1,0 +1,9 @@
+@charset "utf-8";
+
+header
+{
+	height: 400px;
+	width: 400px;
+	foreground-color: black;
+	background-color: red;
+}
