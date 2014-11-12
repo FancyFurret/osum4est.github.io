@@ -1,9 +1,78 @@
 @charset "utf-8";
 
+*
+{
+	margin: 0px;
+	padding: 0px;
+	text-decoration: none;
+}
+
+@font-face
+{
+	font-family: "Pixel";
+	src: url("fonts/FreePixel.ttf");
+}
+
 header
 {
-	height: 400px;
-	width: 400px;
-	foreground-color: black;
-	background-color: red;
+	background-color: #ABFFFF;
 }
+
+header h1
+{
+	font-size: 72px;
+	font-family: "Pixel";
+	text-align: center;
+}
+
+nav
+{
+	background-color: #E6D0BA;
+}
+
+nav ul
+{
+	text-align: center;
+	height: 50px;
+	font-family: "Pixel";
+
+}
+
+nav ul li 
+{
+	text-align: center;
+	font-size: 24px;
+	color: brown;
+	width: 100px;
+	height: 50px;
+	display: inline-block;
+	line-height: 200%
+}
+
+nav ul li:hover
+{
+	background-color: #E0B78B;
+}
+
+section
+{
+	width: 100%;
+	height: 500px;
+	background-color: green;
+}
+
+section p
+{
+	padding-top: 100px;
+	font-family: "Pixel";
+	font-size: 32;
+}
+
+.wrapper
+{
+	margin: 0 auto;
+ 	width: 800px;
+}
+
+
+
