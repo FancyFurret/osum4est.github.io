@@ -5,10 +5,9 @@ module BattleSnake {
 
         private url: string = "localhost";
         private port: string = "8000";
+        private callbacks: IMultiplayerCallbacks;
 
         socket: SocketIOClient.Socket;
-
-        oppJoin: any;
 
         static getInstance(): Networking {
             return Networking._instance;
@@ -16,28 +15,32 @@ module BattleSnake {
 
         connect() {
             this.socket = io.connect("https://multiplayertest-8bitforest.rhcloud.com");
+            //this.socket = io.connect(this.url + ":" + this.port);
+            console.log("Connected to: " + this.socket.io.uri)
 
             var myself = this;
-            this.socket.on('opponentJoin', function(data) {
+            this.socket.on('oppJoined', function(data, id) {
                 console.log("Opponent joined! " + data['size']);
-                myself.oppJoin.opponentJoin(data);
-            }).on('opponentMove', function(data) {
-                console.log("Opponent joined! " + data['size']);
-                myself.oppJoin.opponentMove(data);
+                myself.callbacks.oppJoined(data, id);
+            }).on('getOpps', function(data) {
+                myself.callbacks.getOpps(data);
+            }).on('oppUpdate', function(data, id) {
+                myself.callbacks.oppUpdate(data, id);
+            }).on('oppLeft', function(id) {
+                myself.callbacks.oppLeft(id);
             });
         }
 
-        move(json: any) {
-            this.socket.emit('move', json);
-        }
-
-
-        setOpponentJoin(context: any) {
-            this.oppJoin = context;
+        update(json: any) {
+            this.socket.emit('update', json);
         }
 
         join(data: any) {
-            this.socket.emit('join', data);
+            this.socket.emit('joined', data);
+        }
+
+        setMultiplayerCallbacks(callbacks: IMultiplayerCallbacks) {
+            this.callbacks = callbacks;
         }
     }
 }

@@ -1,3 +1,5 @@
+/// <reference path="./GameObject.ts"/>
+
 module BattleSnake {
 
     export enum Direction {
@@ -15,51 +17,15 @@ module BattleSnake {
         size: number;
 
         body: Array<SnakePart>;
-        bodyColor: number;
         head: SnakePart;
-        headColor: number;
 
         changedDirection: boolean = true;
         queuedDirection: Direction;
 
-        constructor(game: Phaser.Game, speed: number, initLength: number, size: number, bodyColor: number, headColor: number) {
+        constructor(game: Phaser.Game, speed: number) {
             super(game);
 
-            this.direction = Direction.RIGHT;
-            this.speed = speed;
-            this.size = size;
-
-            this.bodyColor = bodyColor;
-            this.headColor = headColor;
-
-            this.head = new SnakePart(5 * size, 5 * size, headColor);
-            this.body = new Array<SnakePart>();
-            for (var i = initLength; i >= 1; i--)
-                this.body.push(new SnakePart(this.head.x - size * i, this.head.y, bodyColor));
-
-            Input.registerInput(Phaser.Keyboard.UP, this);
-            Input.registerInput(Phaser.Keyboard.DOWN, this);
-            Input.registerInput(Phaser.Keyboard.LEFT, this);
-            Input.registerInput(Phaser.Keyboard.RIGHT, this);
-
-            this.game.time.events.loop(this.speed, this.move, this);
-        }
-
-        recieveInput(key: number) {
-            switch (key) {
-                case Phaser.Keyboard.UP:
-                    this.changeDirection(Direction.UP);
-                    break;
-                case Phaser.Keyboard.DOWN:
-                    this.changeDirection(Direction.DOWN);
-                    break;
-                case Phaser.Keyboard.LEFT:
-                    this.changeDirection(Direction.LEFT);
-                    break;
-                case Phaser.Keyboard.RIGHT:
-                    this.changeDirection(Direction.RIGHT);
-                    break;
-            }
+            this.game.time.events.loop(speed, this.move, this);
         }
 
         changeDirection(direction: Direction) {
@@ -71,8 +37,11 @@ module BattleSnake {
             else if (!this.changedDirection || !this.isDirectionValid(direction, this.direction))
                 return;
 
+
             this.direction = direction;
             this.changedDirection = false;
+
+            Networking.getInstance().update(this.getJSON());
         }
 
         isDirectionValid(direction1: Direction, direction2: Direction): boolean {
@@ -85,9 +54,9 @@ module BattleSnake {
         }
 
         render(rendering: Rendering) {
-            rendering.drawSquare(this.head.x, this.head.y, this.size, this.headColor);
+            rendering.drawSquare(this.head.x, this.head.y, this.size, this.head.color);
             for (var i = 0; i < this.body.length; i++)
-                rendering.drawSquare(this.body[i].x, this.body[i].y, this.size, this.bodyColor);
+                rendering.drawSquare(this.body[i].x, this.body[i].y, this.size, this.body[i].color);
         }
 
         move() {
@@ -114,6 +83,7 @@ module BattleSnake {
                     break;
             }
 
+
             for (var i = 0; i < this.body.length - 1; i++) {
                 this.body[i].x = this.body[i + 1].x;
                 this.body[i].y = this.body[i + 1].y;
@@ -124,14 +94,13 @@ module BattleSnake {
             this.head.y += moveY * this.size;
 
             this.changedDirection = true;
-
-            Networking.getInstance().move(this.getJSON());
         }
 
         getJSON() {
             var json: any = {
                 speed: this.speed,
                 size: this.size,
+                direction: this.direction,
                 head: {
                     x: this.head.x,
                     y: this.head.y,
@@ -151,7 +120,7 @@ module BattleSnake {
         }
     }
 
-    class SnakePart {
+    export class SnakePart {
         x: number;
         y: number;
         color; number;

@@ -1,10 +1,10 @@
 module BattleSnake {
-    export class Play extends Phaser.State {
+    export class Play extends Phaser.State implements IMultiplayerCallbacks {
 
         gameObjects: Array<GameObject>;
 
-        snake: Snake;
-        opponentSnakes: Array<NetworkSnake>;
+        snake: ClientSnake;
+        oppSnakes: { [index: string]: NetworkSnake; } = {};
 
         rendering; Rendering;
         networking: Networking;
@@ -16,13 +16,13 @@ module BattleSnake {
             this.rendering = new Rendering();
             this.rendering.init(this.game);
             this.networking = Networking.getInstance();
-            this.networking.setOpponentJoin(this);
+            this.networking.setMultiplayerCallbacks(this);
 
             this.startGame();
         }
 
         startGame() {
-            this.snake = new Snake(
+            this.snake = new ClientSnake(
                 this.game,
                 50,
                 5,
@@ -30,8 +30,6 @@ module BattleSnake {
                 Number("0x" + (Math.random() * 0xFFFFFF << 0).toString(16)),
                 0xFF0000
             );
-
-            this.opponentSnakes = new Array<NetworkSnake>();
 
             this.gameObjects = new Array<GameObject>();
             this.gameObjects.push(this.snake);
@@ -42,14 +40,22 @@ module BattleSnake {
             this.networking.join(this.snake.getJSON());
         }
 
-        opponentJoin(json: any) {
-            console.log(json);
-            this.gameObjects.push(new NetworkSnake(this.game, json));
+        oppJoined(json: any, id: string) {
+            this.oppSnakes[id] = new NetworkSnake(this.game, json);
+            console.log("Snake with id: " + id + " has joined.");
+            console.log("Size: " + this.oppSnakes[id].size);
         }
 
-        opponentMove(json: any) {
-            console.log(json);
-            (<NetworkSnake>this.gameObjects[1]).loadJSON(json);
+        getOpps(json: any) {
+
+        }
+
+        oppUpdate(json: any, id: string) {
+            this.oppSnakes[id].loadJSON(json);
+        }
+
+        oppLeft(id: string) {
+            delete this.oppSnakes[id];
         }
 
         update() {
@@ -63,6 +69,14 @@ module BattleSnake {
             this.gameObjects.forEach(go => {
                 go.render(this.rendering);
             });
+            for (var key in this.oppSnakes) {
+                this.oppSnakes[key].render(this.rendering);
+            }
+            // this.oppSnakes.forEach(os => {
+            //     console.log("rendering snake");
+            //     os.render(this.rendering);
+            // })
+            // console.log("Opp snake length: " + this.oppSnakes.length);
         }
     }
 }

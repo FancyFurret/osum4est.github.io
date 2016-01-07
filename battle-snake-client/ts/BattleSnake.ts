@@ -1,3 +1,4 @@
+
 module BattleSnake {
     export class BattleSnake extends Phaser.Game {
 

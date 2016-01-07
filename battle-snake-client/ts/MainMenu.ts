@@ -7,7 +7,7 @@ module BattleSnake {
 
         create() {
             this.stage.backgroundColor = 0xF2F2F2;
-            
+
             this.uiDiv = document.getElementById("ui");
 
             this.uiDiv.innerHTML += '<input id="nick" name="nick" type="text" placeholder="Nickname..." />';

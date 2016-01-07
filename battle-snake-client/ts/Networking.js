@@ -10,23 +10,27 @@ var BattleSnake;
         };
         Networking.prototype.connect = function () {
             this.socket = io.connect("https://multiplayertest-8bitforest.rhcloud.com");
+            console.log("Connected to: " + this.socket.io.uri);
             var myself = this;
-            this.socket.on('opponentJoin', function (data) {
+            this.socket.on('oppJoined', function (data, id) {
                 console.log("Opponent joined! " + data['size']);
-                myself.oppJoin.opponentJoin(data);
-            }).on('opponentMove', function (data) {
-                console.log("Opponent joined! " + data['size']);
-                myself.oppJoin.opponentMove(data);
+                myself.callbacks.oppJoined(data, id);
+            }).on('getOpps', function (data) {
+                myself.callbacks.getOpps(data);
+            }).on('oppUpdate', function (data, id) {
+                myself.callbacks.oppUpdate(data, id);
+            }).on('oppLeft', function (id) {
+                myself.callbacks.oppLeft(id);
             });
         };
-        Networking.prototype.move = function (json) {
-            this.socket.emit('move', json);
-        };
-        Networking.prototype.setOpponentJoin = function (context) {
-            this.oppJoin = context;
+        Networking.prototype.update = function (json) {
+            this.socket.emit('update', json);
         };
         Networking.prototype.join = function (data) {
-            this.socket.emit('join', data);
+            this.socket.emit('joined', data);
+        };
+        Networking.prototype.setMultiplayerCallbacks = function (callbacks) {
+            this.callbacks = callbacks;
         };
         Networking._instance = new Networking();
         return Networking;

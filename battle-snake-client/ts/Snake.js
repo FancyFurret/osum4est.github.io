@@ -15,40 +15,11 @@ var BattleSnake;
     var Direction = BattleSnake.Direction;
     var Snake = (function (_super) {
         __extends(Snake, _super);
-        function Snake(game, speed, initLength, size, bodyColor, headColor) {
+        function Snake(game, speed) {
             _super.call(this, game);
             this.changedDirection = true;
-            this.direction = Direction.RIGHT;
-            this.speed = speed;
-            this.size = size;
-            this.bodyColor = bodyColor;
-            this.headColor = headColor;
-            this.head = new SnakePart(5 * size, 5 * size, headColor);
-            this.body = new Array();
-            for (var i = initLength; i >= 1; i--)
-                this.body.push(new SnakePart(this.head.x - size * i, this.head.y, bodyColor));
-            BattleSnake.Input.registerInput(Phaser.Keyboard.UP, this);
-            BattleSnake.Input.registerInput(Phaser.Keyboard.DOWN, this);
-            BattleSnake.Input.registerInput(Phaser.Keyboard.LEFT, this);
-            BattleSnake.Input.registerInput(Phaser.Keyboard.RIGHT, this);
-            this.game.time.events.loop(this.speed, this.move, this);
+            this.game.time.events.loop(speed, this.move, this);
         }
-        Snake.prototype.recieveInput = function (key) {
-            switch (key) {
-                case Phaser.Keyboard.UP:
-                    this.changeDirection(Direction.UP);
-                    break;
-                case Phaser.Keyboard.DOWN:
-                    this.changeDirection(Direction.DOWN);
-                    break;
-                case Phaser.Keyboard.LEFT:
-                    this.changeDirection(Direction.LEFT);
-                    break;
-                case Phaser.Keyboard.RIGHT:
-                    this.changeDirection(Direction.RIGHT);
-                    break;
-            }
-        };
         Snake.prototype.changeDirection = function (direction) {
             if (!this.changedDirection && this.isDirectionValid(direction, this.direction) && (this.queuedDirection == null || this.queuedDirection == Direction.NONE)) {
                 this.queuedDirection = direction;
@@ -58,6 +29,7 @@ var BattleSnake;
                 return;
             this.direction = direction;
             this.changedDirection = false;
+            BattleSnake.Networking.getInstance().update(this.getJSON());
         };
         Snake.prototype.isDirectionValid = function (direction1, direction2) {
             if (direction1 == Direction.UP && direction2 == Direction.DOWN ||
@@ -68,9 +40,9 @@ var BattleSnake;
             return true;
         };
         Snake.prototype.render = function (rendering) {
-            rendering.drawSquare(this.head.x, this.head.y, this.size, this.headColor);
+            rendering.drawSquare(this.head.x, this.head.y, this.size, this.head.color);
             for (var i = 0; i < this.body.length; i++)
-                rendering.drawSquare(this.body[i].x, this.body[i].y, this.size, this.bodyColor);
+                rendering.drawSquare(this.body[i].x, this.body[i].y, this.size, this.body[i].color);
         };
         Snake.prototype.move = function () {
             var moveX = 0;
@@ -102,12 +74,12 @@ var BattleSnake;
             this.head.x += moveX * this.size;
             this.head.y += moveY * this.size;
             this.changedDirection = true;
-            BattleSnake.Networking.getInstance().move(this.getJSON());
         };
         Snake.prototype.getJSON = function () {
             var json = {
                 speed: this.speed,
                 size: this.size,
+                direction: this.direction,
                 head: {
                     x: this.head.x,
                     y: this.head.y,
@@ -135,4 +107,5 @@ var BattleSnake;
         }
         return SnakePart;
     }());
+    BattleSnake.SnakePart = SnakePart;
 })(BattleSnake || (BattleSnake = {}));
