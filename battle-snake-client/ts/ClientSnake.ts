@@ -24,6 +24,8 @@ module BattleSnake {
                     Input.registerInput(Phaser.Keyboard.DOWN, this);
                     Input.registerInput(Phaser.Keyboard.LEFT, this);
                     Input.registerInput(Phaser.Keyboard.RIGHT, this);
+
+                    this.game.time.events.loop(speed, this.move, this);
                 }
 
                 recieveInput(key: number) {
@@ -41,6 +43,11 @@ module BattleSnake {
                             this.changeDirection(Direction.RIGHT);
                             break;
                     }
+                }
+
+                move() {
+                    super.move();
+                    Networking.getInstance().update(this.getDirectionJSON());
                 }
             }
         }

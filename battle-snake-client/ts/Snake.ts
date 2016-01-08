@@ -25,7 +25,7 @@ module BattleSnake {
         constructor(game: Phaser.Game, speed: number) {
             super(game);
 
-            this.game.time.events.loop(speed, this.move, this);
+
         }
 
         changeDirection(direction: Direction) {
@@ -40,8 +40,6 @@ module BattleSnake {
 
             this.direction = direction;
             this.changedDirection = false;
-
-            Networking.getInstance().update(this.getJSON());
         }
 
         isDirectionValid(direction1: Direction, direction2: Direction): boolean {
@@ -90,13 +88,24 @@ module BattleSnake {
             }
             this.body[this.body.length - 1].x = this.head.x;
             this.body[this.body.length - 1].y = this.head.y;
-            this.head.x += moveX * this.size;
-            this.head.y += moveY * this.size;
+
+            if (this.head.x + moveX * this.size >= Play.boardSize * (Play.boardWidth - 1))
+                this.head.x = Play.boardSize;
+            else if (this.head.x + moveX * this.size <= 0)
+                this.head.x = Play.boardSize * (Play.boardWidth - 2);
+            else if (this.head.y + moveY * this.size >= Play.boardSize * (Play.boardHeight - 1))
+                this.head.y = Play.boardSize;
+            else if (this.head.y + moveY * this.size <= 0)
+                this.head.y = Play.boardSize * (Play.boardHeight - 2);
+            else {
+                this.head.x += moveX * this.size;
+                this.head.y += moveY * this.size;
+            }
 
             this.changedDirection = true;
         }
 
-        getJSON() {
+        getJSON(): any {
             var json: any = {
                 speed: this.speed,
                 size: this.size,
@@ -116,6 +125,13 @@ module BattleSnake {
                 json['body'][i]['color'] = this.body[i].color;
             };
 
+            return json;
+        }
+
+        getDirectionJSON(): any {
+            var json: any = {
+                direction: this.direction
+            }
             return json;
         }
     }

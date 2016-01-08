@@ -14,7 +14,8 @@ module BattleSnake {
         }
 
         connect() {
-            this.socket = io.connect("https://multiplayertest-8bitforest.rhcloud.com");
+            this.socket = io.connect("https://battle-snake-osum4est.c9users.io")
+            //this.socket = io.connect("https://multiplayertest-8bitforest.rhcloud.com");
             //this.socket = io.connect(this.url + ":" + this.port);
             console.log("Connected to: " + this.socket.io.uri)
 
@@ -22,8 +23,6 @@ module BattleSnake {
             this.socket.on('oppJoined', function(data, id) {
                 console.log("Opponent joined! " + data['size']);
                 myself.callbacks.oppJoined(data, id);
-            }).on('getOpps', function(data) {
-                myself.callbacks.getOpps(data);
             }).on('oppUpdate', function(data, id) {
                 myself.callbacks.oppUpdate(data, id);
             }).on('oppLeft', function(id) {

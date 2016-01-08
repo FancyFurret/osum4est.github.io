@@ -21,6 +21,7 @@ var BattleSnake;
             BattleSnake.Input.registerInput(Phaser.Keyboard.DOWN, this);
             BattleSnake.Input.registerInput(Phaser.Keyboard.LEFT, this);
             BattleSnake.Input.registerInput(Phaser.Keyboard.RIGHT, this);
+            this.game.time.events.loop(speed, this.move, this);
         }
         ClientSnake.prototype.recieveInput = function (key) {
             switch (key) {
@@ -37,6 +38,10 @@ var BattleSnake;
                     this.changeDirection(BattleSnake.Direction.RIGHT);
                     break;
             }
+        };
+        ClientSnake.prototype.move = function () {
+            _super.prototype.move.call(this);
+            BattleSnake.Networking.getInstance().update(this.getDirectionJSON());
         };
         return ClientSnake;
     }(BattleSnake.Snake));

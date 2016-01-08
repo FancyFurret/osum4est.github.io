@@ -9,14 +9,12 @@ var BattleSnake;
             return Networking._instance;
         };
         Networking.prototype.connect = function () {
-            this.socket = io.connect("https://multiplayertest-8bitforest.rhcloud.com");
+            this.socket = io.connect("https://battle-snake-osum4est.c9users.io");
             console.log("Connected to: " + this.socket.io.uri);
             var myself = this;
             this.socket.on('oppJoined', function (data, id) {
                 console.log("Opponent joined! " + data['size']);
                 myself.callbacks.oppJoined(data, id);
-            }).on('getOpps', function (data) {
-                myself.callbacks.getOpps(data);
             }).on('oppUpdate', function (data, id) {
                 myself.callbacks.oppUpdate(data, id);
             }).on('oppLeft', function (id) {

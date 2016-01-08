@@ -1,6 +1,10 @@
 module BattleSnake {
     export class Play extends Phaser.State implements IMultiplayerCallbacks {
 
+        static boardSize: number;
+        static boardWidth: number;
+        static boardHeight: number;
+
         gameObjects: Array<GameObject>;
 
         snake: ClientSnake;
@@ -32,10 +36,15 @@ module BattleSnake {
             );
 
             this.gameObjects = new Array<GameObject>();
-            this.gameObjects.push(this.snake);
+            this.registerGameObject(this.snake);
             this.gameObjects.forEach(go => {
                 go.create();
             });
+
+            Play.boardSize = 25;
+            Play.boardWidth = 25;
+            Play.boardHeight = 25;
+            this.makeBoard(Play.boardSize, Play.boardWidth, Play.boardHeight, 0x0000FF);
 
             this.networking.join(this.snake.getJSON());
         }
@@ -46,12 +55,9 @@ module BattleSnake {
             console.log("Size: " + this.oppSnakes[id].size);
         }
 
-        getOpps(json: any) {
-
-        }
-
         oppUpdate(json: any, id: string) {
             this.oppSnakes[id].loadJSON(json);
+            this.oppSnakes[id].move();
         }
 
         oppLeft(id: string) {
@@ -72,11 +78,21 @@ module BattleSnake {
             for (var key in this.oppSnakes) {
                 this.oppSnakes[key].render(this.rendering);
             }
-            // this.oppSnakes.forEach(os => {
-            //     console.log("rendering snake");
-            //     os.render(this.rendering);
-            // })
-            // console.log("Opp snake length: " + this.oppSnakes.length);
+        }
+
+        makeBoard(tileSize: number, width: number, height: number, color: number) {
+            for (var i = 0; i < width; i++) {
+                this.registerGameObject(new ObjectWall(this.game, tileSize, color, i * tileSize, 0));
+                this.registerGameObject(new ObjectWall(this.game, tileSize, color, i * tileSize, (height - 1) * tileSize));
+            }
+            for(var i = 0; i < height; i++) {
+                this.registerGameObject(new ObjectWall(this.game, tileSize, color, 0, i * tileSize));
+                this.registerGameObject(new ObjectWall(this.game, tileSize, color, (width - 1) * tileSize, i * tileSize));
+            }
+        }
+
+        registerGameObject(gameObject: GameObject) {
+            this.gameObjects.push(gameObject);
         }
     }
 }

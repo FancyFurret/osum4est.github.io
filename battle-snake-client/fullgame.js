@@ -1,11 +1,45 @@
 window.onload = function () {
     var game = new BattleSnake.BattleSnake();
 };
+var BattleSnake;
+(function (BattleSnake) {
+    var GameObject = (function () {
+        function GameObject(game) {
+            this.game = game;
+        }
+        GameObject.prototype.create = function () { };
+        ;
+        GameObject.prototype.update = function () { };
+        ;
+        GameObject.prototype.render = function (rendering) { };
+        ;
+        return GameObject;
+    })();
+    BattleSnake.GameObject = GameObject;
+})(BattleSnake || (BattleSnake = {}));
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var BattleSnake;
+(function (BattleSnake) {
+    var BasicGameObject = (function (_super) {
+        __extends(BasicGameObject, _super);
+        function BasicGameObject(game, size, color, x, y) {
+            _super.call(this, game);
+            this.size = size;
+            this.color = color;
+            this.x = x;
+            this.y = y;
+        }
+        BasicGameObject.prototype.render = function (rendering) {
+            rendering.drawSquare(this.x, this.y, this.size, this.color);
+        };
+        return BasicGameObject;
+    })(BattleSnake.GameObject);
+    BattleSnake.BasicGameObject = BasicGameObject;
+})(BattleSnake || (BattleSnake = {}));
 var BattleSnake;
 (function (BattleSnake_1) {
     var BattleSnake = (function (_super) {
@@ -44,22 +78,6 @@ var BattleSnake;
 })(BattleSnake || (BattleSnake = {}));
 var BattleSnake;
 (function (BattleSnake) {
-    var GameObject = (function () {
-        function GameObject(game) {
-            this.game = game;
-        }
-        GameObject.prototype.create = function () { };
-        ;
-        GameObject.prototype.update = function () { };
-        ;
-        GameObject.prototype.render = function (rendering) { };
-        ;
-        return GameObject;
-    })();
-    BattleSnake.GameObject = GameObject;
-})(BattleSnake || (BattleSnake = {}));
-var BattleSnake;
-(function (BattleSnake) {
     (function (Direction) {
         Direction[Direction["NONE"] = 0] = "NONE";
         Direction[Direction["LEFT"] = 1] = "LEFT";
@@ -73,7 +91,6 @@ var BattleSnake;
         function Snake(game, speed) {
             _super.call(this, game);
             this.changedDirection = true;
-            this.game.time.events.loop(speed, this.move, this);
         }
         Snake.prototype.changeDirection = function (direction) {
             if (!this.changedDirection && this.isDirectionValid(direction, this.direction) && (this.queuedDirection == null || this.queuedDirection == Direction.NONE)) {
@@ -84,7 +101,6 @@ var BattleSnake;
                 return;
             this.direction = direction;
             this.changedDirection = false;
-            BattleSnake.Networking.getInstance().update(this.getJSON());
         };
         Snake.prototype.isDirectionValid = function (direction1, direction2) {
             if (direction1 == Direction.UP && direction2 == Direction.DOWN ||
@@ -126,8 +142,18 @@ var BattleSnake;
             }
             this.body[this.body.length - 1].x = this.head.x;
             this.body[this.body.length - 1].y = this.head.y;
-            this.head.x += moveX * this.size;
-            this.head.y += moveY * this.size;
+            if (this.head.x + moveX * this.size >= BattleSnake.Play.boardSize * (BattleSnake.Play.boardWidth - 1))
+                this.head.x = BattleSnake.Play.boardSize;
+            else if (this.head.x + moveX * this.size <= 0)
+                this.head.x = BattleSnake.Play.boardSize * (BattleSnake.Play.boardWidth - 2);
+            else if (this.head.y + moveY * this.size >= BattleSnake.Play.boardSize * (BattleSnake.Play.boardHeight - 1))
+                this.head.y = BattleSnake.Play.boardSize;
+            else if (this.head.y + moveY * this.size <= 0)
+                this.head.y = BattleSnake.Play.boardSize * (BattleSnake.Play.boardHeight - 2);
+            else {
+                this.head.x += moveX * this.size;
+                this.head.y += moveY * this.size;
+            }
             this.changedDirection = true;
         };
         Snake.prototype.getJSON = function () {
@@ -149,6 +175,12 @@ var BattleSnake;
                 json['body'][i]['color'] = this.body[i].color;
             }
             ;
+            return json;
+        };
+        Snake.prototype.getDirectionJSON = function () {
+            var json = {
+                direction: this.direction
+            };
             return json;
         };
         return Snake;
@@ -182,6 +214,7 @@ var BattleSnake;
             BattleSnake.Input.registerInput(Phaser.Keyboard.DOWN, this);
             BattleSnake.Input.registerInput(Phaser.Keyboard.LEFT, this);
             BattleSnake.Input.registerInput(Phaser.Keyboard.RIGHT, this);
+            this.game.time.events.loop(speed, this.move, this);
         }
         ClientSnake.prototype.recieveInput = function (key) {
             switch (key) {
@@ -198,6 +231,10 @@ var BattleSnake;
                     this.changeDirection(BattleSnake.Direction.RIGHT);
                     break;
             }
+        };
+        ClientSnake.prototype.move = function () {
+            _super.prototype.move.call(this);
+            BattleSnake.Networking.getInstance().update(this.getDirectionJSON());
         };
         return ClientSnake;
     })(BattleSnake.Snake);
@@ -265,14 +302,12 @@ var BattleSnake;
             return Networking._instance;
         };
         Networking.prototype.connect = function () {
-            this.socket = io.connect("https://multiplayertest-8bitforest.rhcloud.com");
+            this.socket = io.connect("https://battle-snake-osum4est.c9users.io");
             console.log("Connected to: " + this.socket.io.uri);
             var myself = this;
             this.socket.on('oppJoined', function (data, id) {
                 console.log("Opponent joined! " + data['size']);
                 myself.callbacks.oppJoined(data, id);
-            }).on('getOpps', function (data) {
-                myself.callbacks.getOpps(data);
             }).on('oppUpdate', function (data, id) {
                 myself.callbacks.oppUpdate(data, id);
             }).on('oppLeft', function (id) {
@@ -302,18 +337,35 @@ var BattleSnake;
             _super.call(this, game, this.speed);
         }
         NetworkSnake.prototype.loadJSON = function (json) {
-            this.direction = json['direction'];
-            this.speed = json['speed'];
-            this.size = json['size'];
-            this.head = new BattleSnake.SnakePart(json['head']['x'], json['head']['y'], json['head']['color']);
-            this.body = new Array();
-            for (var i = 0; i < json['body'].length; i++) {
-                this.body.push(new BattleSnake.SnakePart(json['body'][i]['x'], json['body'][i]['y'], json['body'][i]['color']));
+            if (json['direction'] != null)
+                this.direction = json['direction'];
+            if (json['speed'] != null)
+                this.speed = json['speed'];
+            if (json['size'] != null)
+                this.size = json['size'];
+            if (json['head'] != null)
+                this.head = new BattleSnake.SnakePart(json['head']['x'], json['head']['y'], json['head']['color']);
+            if (json['body'] != null) {
+                this.body = new Array();
+                for (var i = 0; i < json['body'].length; i++) {
+                    this.body.push(new BattleSnake.SnakePart(json['body'][i]['x'], json['body'][i]['y'], json['body'][i]['color']));
+                }
             }
         };
         return NetworkSnake;
     })(BattleSnake.Snake);
     BattleSnake.NetworkSnake = NetworkSnake;
+})(BattleSnake || (BattleSnake = {}));
+var BattleSnake;
+(function (BattleSnake) {
+    var ObjectWall = (function (_super) {
+        __extends(ObjectWall, _super);
+        function ObjectWall() {
+            _super.apply(this, arguments);
+        }
+        return ObjectWall;
+    })(BattleSnake.BasicGameObject);
+    BattleSnake.ObjectWall = ObjectWall;
 })(BattleSnake || (BattleSnake = {}));
 var BattleSnake;
 (function (BattleSnake) {
@@ -335,10 +387,14 @@ var BattleSnake;
         Play.prototype.startGame = function () {
             this.snake = new BattleSnake.ClientSnake(this.game, 50, 5, 25, Number("0x" + (Math.random() * 0xFFFFFF << 0).toString(16)), 0xFF0000);
             this.gameObjects = new Array();
-            this.gameObjects.push(this.snake);
+            this.registerGameObject(this.snake);
             this.gameObjects.forEach(function (go) {
                 go.create();
             });
+            Play.boardSize = 25;
+            Play.boardWidth = 25;
+            Play.boardHeight = 25;
+            this.makeBoard(Play.boardSize, Play.boardWidth, Play.boardHeight, 0x0000FF);
             this.networking.join(this.snake.getJSON());
         };
         Play.prototype.oppJoined = function (json, id) {
@@ -346,10 +402,9 @@ var BattleSnake;
             console.log("Snake with id: " + id + " has joined.");
             console.log("Size: " + this.oppSnakes[id].size);
         };
-        Play.prototype.getOpps = function (json) {
-        };
         Play.prototype.oppUpdate = function (json, id) {
             this.oppSnakes[id].loadJSON(json);
+            this.oppSnakes[id].move();
         };
         Play.prototype.oppLeft = function (id) {
             delete this.oppSnakes[id];
@@ -368,6 +423,19 @@ var BattleSnake;
             for (var key in this.oppSnakes) {
                 this.oppSnakes[key].render(this.rendering);
             }
+        };
+        Play.prototype.makeBoard = function (tileSize, width, height, color) {
+            for (var i = 0; i < width; i++) {
+                this.registerGameObject(new BattleSnake.ObjectWall(this.game, tileSize, color, i * tileSize, 0));
+                this.registerGameObject(new BattleSnake.ObjectWall(this.game, tileSize, color, i * tileSize, (height - 1) * tileSize));
+            }
+            for (var i = 0; i < height; i++) {
+                this.registerGameObject(new BattleSnake.ObjectWall(this.game, tileSize, color, 0, i * tileSize));
+                this.registerGameObject(new BattleSnake.ObjectWall(this.game, tileSize, color, (width - 1) * tileSize, i * tileSize));
+            }
+        };
+        Play.prototype.registerGameObject = function (gameObject) {
+            this.gameObjects.push(gameObject);
         };
         return Play;
     })(Phaser.State);

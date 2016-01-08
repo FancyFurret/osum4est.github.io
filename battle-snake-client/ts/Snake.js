@@ -18,7 +18,6 @@ var BattleSnake;
         function Snake(game, speed) {
             _super.call(this, game);
             this.changedDirection = true;
-            this.game.time.events.loop(speed, this.move, this);
         }
         Snake.prototype.changeDirection = function (direction) {
             if (!this.changedDirection && this.isDirectionValid(direction, this.direction) && (this.queuedDirection == null || this.queuedDirection == Direction.NONE)) {
@@ -29,7 +28,6 @@ var BattleSnake;
                 return;
             this.direction = direction;
             this.changedDirection = false;
-            BattleSnake.Networking.getInstance().update(this.getJSON());
         };
         Snake.prototype.isDirectionValid = function (direction1, direction2) {
             if (direction1 == Direction.UP && direction2 == Direction.DOWN ||
@@ -71,8 +69,18 @@ var BattleSnake;
             }
             this.body[this.body.length - 1].x = this.head.x;
             this.body[this.body.length - 1].y = this.head.y;
-            this.head.x += moveX * this.size;
-            this.head.y += moveY * this.size;
+            if (this.head.x + moveX * this.size >= BattleSnake.Play.boardSize * (BattleSnake.Play.boardWidth - 1))
+                this.head.x = BattleSnake.Play.boardSize;
+            else if (this.head.x + moveX * this.size <= 0)
+                this.head.x = BattleSnake.Play.boardSize * (BattleSnake.Play.boardWidth - 2);
+            else if (this.head.y + moveY * this.size >= BattleSnake.Play.boardSize * (BattleSnake.Play.boardHeight - 1))
+                this.head.y = BattleSnake.Play.boardSize;
+            else if (this.head.y + moveY * this.size <= 0)
+                this.head.y = BattleSnake.Play.boardSize * (BattleSnake.Play.boardHeight - 2);
+            else {
+                this.head.x += moveX * this.size;
+                this.head.y += moveY * this.size;
+            }
             this.changedDirection = true;
         };
         Snake.prototype.getJSON = function () {
@@ -94,6 +102,12 @@ var BattleSnake;
                 json['body'][i]['color'] = this.body[i].color;
             }
             ;
+            return json;
+        };
+        Snake.prototype.getDirectionJSON = function () {
+            var json = {
+                direction: this.direction
+            };
             return json;
         };
         return Snake;
