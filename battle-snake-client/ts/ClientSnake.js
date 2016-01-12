@@ -7,8 +7,8 @@ var BattleSnake;
 (function (BattleSnake) {
     var ClientSnake = (function (_super) {
         __extends(ClientSnake, _super);
-        function ClientSnake(game, speed, initLength, size, bodyColor, headColor) {
-            _super.call(this, game, speed);
+        function ClientSnake(speed, initLength, size, bodyColor, headColor) {
+            _super.call(this, speed);
             this.changedDirection = true;
             this.direction = BattleSnake.Direction.RIGHT;
             this.speed = speed;
@@ -21,8 +21,10 @@ var BattleSnake;
             BattleSnake.Input.registerInput(Phaser.Keyboard.DOWN, this);
             BattleSnake.Input.registerInput(Phaser.Keyboard.LEFT, this);
             BattleSnake.Input.registerInput(Phaser.Keyboard.RIGHT, this);
-            this.game.time.events.loop(speed, this.move, this);
         }
+        ClientSnake.prototype.changeDirection = function (direction) {
+            BattleSnake.Networking.getInstance().input({ direction: direction });
+        };
         ClientSnake.prototype.recieveInput = function (key) {
             switch (key) {
                 case Phaser.Keyboard.UP:
@@ -38,10 +40,6 @@ var BattleSnake;
                     this.changeDirection(BattleSnake.Direction.RIGHT);
                     break;
             }
-        };
-        ClientSnake.prototype.move = function () {
-            _super.prototype.move.call(this);
-            BattleSnake.Networking.getInstance().update(this.getDirectionJSON());
         };
         return ClientSnake;
     }(BattleSnake.Snake));

@@ -7,9 +7,8 @@ module BattleSnake {
         x: number;
         y: number;
 
-        constructor(game: Phaser.Game, size: number, color: number, x: number, y: number) {
-            super(game);
-
+        constructor(size: number, color: number, x: number, y: number) {
+            super();
             this.size = size;
             this.color = color;
             this.x = x;

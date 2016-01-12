@@ -7,8 +7,8 @@ var BattleSnake;
 (function (BattleSnake) {
     var BasicGameObject = (function (_super) {
         __extends(BasicGameObject, _super);
-        function BasicGameObject(game, size, color, x, y) {
-            _super.call(this, game);
+        function BasicGameObject(size, color, x, y) {
+            _super.call(this);
             this.size = size;
             this.color = color;
             this.x = x;

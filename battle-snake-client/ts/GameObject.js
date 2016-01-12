@@ -1,8 +1,7 @@
 var BattleSnake;
 (function (BattleSnake) {
     var GameObject = (function () {
-        function GameObject(game) {
-            this.game = game;
+        function GameObject() {
         }
         GameObject.prototype.create = function () { };
         ;

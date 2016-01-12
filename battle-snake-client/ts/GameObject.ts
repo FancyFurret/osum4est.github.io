@@ -1,10 +1,10 @@
 module BattleSnake {
     export abstract class GameObject {
 
-        game: Phaser.Game;
+        //game: Phaser.Game;
 
-        constructor(game: Phaser.Game) {
-            this.game = game;
+        constructor() {
+            //this.game = game;
         }
 
         create() {};

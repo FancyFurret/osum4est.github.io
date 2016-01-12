@@ -11,7 +11,6 @@ var BattleSnake;
             _super.apply(this, arguments);
         }
         Boot.prototype.preload = function () {
-            this.load.image('preloadBar', 'assets/load.png');
         };
         Boot.prototype.create = function () {
             this.stage.backgroundColor = 0xF2F2F2;

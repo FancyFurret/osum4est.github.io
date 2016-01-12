@@ -20,13 +20,21 @@ module BattleSnake {
             console.log("Connected to: " + this.socket.io.uri)
 
             var myself = this;
-            this.socket.on('oppJoined', function(data, id) {
+            this.socket.on('getGameInfo', function(data) {
+                myself.callbacks.getGameInfo(data);
+            }).on('oppJoined', function(data, id) {
                 console.log("Opponent joined! " + data['size']);
                 myself.callbacks.oppJoined(data, id);
+            }).on('selfUpdate', function(data) {
+                myself.callbacks.selfUpdate(data);
             }).on('oppUpdate', function(data, id) {
                 myself.callbacks.oppUpdate(data, id);
             }).on('oppLeft', function(id) {
                 myself.callbacks.oppLeft(id);
+            }).on('addGameObject', function(data, id) {
+                myself.callbacks.addGameObject(data, id);
+            }).on('removeGameObject', function(id) {
+                myself.callbacks.removeGameObject(id);
             });
         }
 
@@ -36,6 +44,10 @@ module BattleSnake {
 
         join(data: any) {
             this.socket.emit('joined', data);
+        }
+
+        input(json: any) {
+            this.socket.emit('input', json);
         }
 
         setMultiplayerCallbacks(callbacks: IMultiplayerCallbacks) {

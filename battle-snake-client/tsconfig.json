@@ -36,6 +36,7 @@
         "ts/Input.ts",
         "ts/MainMenu.ts",
         "ts/Networking.ts",
+        "ts/NetworkObject.ts",
         "ts/NetworkSnake.ts",
         "ts/ObjectWall.ts",
         "ts/Play.ts",

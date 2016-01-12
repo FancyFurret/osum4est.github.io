@@ -19,36 +19,28 @@ module BattleSnake {
         body: Array<SnakePart>;
         head: SnakePart;
 
-        changedDirection: boolean = true;
-        queuedDirection: Direction;
-
-        constructor(game: Phaser.Game, speed: number) {
-            super(game);
-
-
+        constructor(speed: number) {
+            super();
+            this.speed = speed;
         }
 
-        changeDirection(direction: Direction) {
+        loadJSON(json: any) {
+            if (json['direction'] != null)
+                this.direction = json['direction'];
+            if (json['speed'] != null)
+                this.speed = json['speed'];
+            if (json['size'] != null)
+                this.size = json['size']
 
-            if (!this.changedDirection && this.isDirectionValid(direction, this.direction) && (this.queuedDirection == null || this.queuedDirection == Direction.NONE)) {
-                this.queuedDirection = direction;
-                return;
+            if (json['head'] != null)
+                this.head = new SnakePart(json['head']['x'], json['head']['y'], json['head']['color']);
+
+            if (json['body'] != null) {
+                this.body = new Array<SnakePart>();
+                for (var i: number = 0; i < json['body'].length; i++) {
+                    this.body.push(new SnakePart(json['body'][i]['x'], json['body'][i]['y'], json['body'][i]['color']))
+                }
             }
-            else if (!this.changedDirection || !this.isDirectionValid(direction, this.direction))
-                return;
-
-
-            this.direction = direction;
-            this.changedDirection = false;
-        }
-
-        isDirectionValid(direction1: Direction, direction2: Direction): boolean {
-            if (direction1 == Direction.UP && direction2 == Direction.DOWN ||
-                direction1 == Direction.DOWN && direction2 == Direction.UP ||
-                direction1 == Direction.LEFT && direction2 == Direction.RIGHT ||
-                direction1 == Direction.RIGHT && direction2 == Direction.LEFT)
-                return false;
-            return true;
         }
 
         render(rendering: Rendering) {
@@ -60,11 +52,6 @@ module BattleSnake {
         move() {
             var moveX = 0;
             var moveY = 0;
-
-            if (this.queuedDirection != null && this.queuedDirection != Direction.NONE && this.changedDirection) {
-                this.direction = this.queuedDirection;
-                this.queuedDirection = Direction.NONE;
-            }
 
             switch (this.direction) {
                 case Direction.LEFT:
@@ -101,8 +88,6 @@ module BattleSnake {
                 this.head.x += moveX * this.size;
                 this.head.y += moveY * this.size;
             }
-
-            this.changedDirection = true;
         }
 
         getJSON(): any {

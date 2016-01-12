@@ -2,7 +2,7 @@ module BattleSnake {
     export class Boot extends Phaser.State {
 
         preload() {
-            this.load.image('preloadBar', 'assets/load.png');
+            //this.load.image('preloadBar', 'assets/load.png');
         }
 
         create() {

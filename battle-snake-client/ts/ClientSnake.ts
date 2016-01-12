@@ -6,10 +6,9 @@ module BattleSnake {
                 changedDirection: boolean = true;
                 queuedDirection: Direction;
 
-                constructor(game: Phaser.Game, speed: number, initLength: number, size: number,
+                constructor(speed: number, initLength: number, size: number,
                     bodyColor: number, headColor: number) {
-
-                    super(game, speed);
+                    super(speed);
 
                     this.direction = Direction.RIGHT;
                     this.speed = speed;
@@ -25,7 +24,11 @@ module BattleSnake {
                     Input.registerInput(Phaser.Keyboard.LEFT, this);
                     Input.registerInput(Phaser.Keyboard.RIGHT, this);
 
-                    this.game.time.events.loop(speed, this.move, this);
+                    //this.game.time.events.loop(speed, this.move, this);
+                }
+
+                changeDirection(direction: Direction) {
+                    Networking.getInstance().input({ direction: direction });
                 }
 
                 recieveInput(key: number) {
@@ -43,11 +46,7 @@ module BattleSnake {
                             this.changeDirection(Direction.RIGHT);
                             break;
                     }
-                }
 
-                move() {
-                    super.move();
-                    Networking.getInstance().update(this.getDirectionJSON());
                 }
             }
         }
