@@ -1,0 +1,3 @@
+[submodule "battle-snake"]
+	path = battle-snake
+	url = https://github.com/osum4est/battle-snake.git
